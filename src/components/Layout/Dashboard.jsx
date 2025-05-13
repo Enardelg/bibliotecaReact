@@ -84,13 +84,13 @@ const Dashboard = ({ activeView, books, users, setBooks, setUsers }) => {
               <Typography variant="h4" gutterBottom>
                 Gestión de Usuarios
               </Typography>
-              <Button
+              {/* <Button
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={() => setAddUserOpen(true)}
               >
                 Agregar Usuario
-              </Button>
+              </Button> */}
             </Box>
             <UserList users={users} books={books} />
           </>
