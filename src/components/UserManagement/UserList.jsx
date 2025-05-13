@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   Button, 
   Card, 
@@ -13,61 +13,71 @@ import {
 import AddUser from './AddUser';
 
 const UserList = () => {
-  const [users, setUsers] = React.useState([
-    { id: 1, nombre: 'Maria Garcia', email: 'maria@example.com' },
-    { id: 2, nombre: 'Juan Perez', email: 'juan@example.com' }
-  ]);
+  // Cargar usuarios desde localStorage al iniciar
+  const [users, setUsers] = React.useState(() => {
+    try {
+      const savedUsers = localStorage.getItem('users');
+      return savedUsers ? JSON.parse(savedUsers) : [
+        { id: 1, nombre: 'Maria Garcia', email: 'maria@example.com' },
+        { id: 2, nombre: 'Juan Perez', email: 'juan@example.com' }
+      ];
+    } catch {
+      return [];
+    }
+  });
 
   const [openDialog, setOpenDialog] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
-  const [newUserData, setNewUserData] = React.useState({ nombre: '', email: '' });
 
-  // Función unificada para guardar usuarios (nuevos o editados)
+  // Persistir datos en localStorage cuando cambien
+  useEffect(() => {
+    localStorage.setItem('users', JSON.stringify(users));
+  }, [users]);
+
   const handleSubmitUser = (userData) => {
     setLoading(true);
     setError(null);
 
-    try {
-      // Simulamos una llamada API asíncrona
-      setTimeout(() => {
-        if (editingUser) {
-          setUsers(users.map(user => 
-            user.id === editingUser.id ? userData : user
-          ));
-        } else {
-          setUsers([...users, { ...userData, id: Date.now() }]);
-        }
+    // Simular tiempo de espera para operación
+    setTimeout(() => {
+      try {
+        setUsers(prevUsers => {
+          const updatedUsers = editingUser
+            ? prevUsers.map(user => 
+                user.id === editingUser.id ? userData : user
+              )
+            : [...prevUsers, { ...userData, id: Date.now() }];
+          
+          return updatedUsers;
+        });
         setOpenDialog(false);
+      } catch (err) {
+        setError('Error al guardar el usuario');
+      } finally {
         setLoading(false);
-      }, 500);
-    } catch (err) {
-      setError('Error al guardar el usuario');
-      setLoading(false);
-    }
+      }
+    }, 500);
   };
 
-  // Abrir diálogo para agregar o editar
   const handleOpenDialog = (user = null) => {
     setEditingUser(user);
-    setNewUserData(user ? { ...user } : { nombre: '', email: '' });
     setOpenDialog(true);
   };
 
-  // Eliminar usuario
   const handleDeleteUser = (userId) => {
     setLoading(true);
-    try {
-      setTimeout(() => {
-        setUsers(users.filter(user => user.id !== userId));
+    setTimeout(() => {
+      try {
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
         setOpenDialog(false);
+      } catch (err) {
+        setError('Error al eliminar el usuario');
+      } finally {
         setLoading(false);
-      }, 500);
-    } catch (err) {
-      setError('Error al eliminar el usuario');
-      setLoading(false);
-    }
+      }
+    }, 500);
   };
 
   return (
@@ -79,29 +89,23 @@ const UserList = () => {
         mb: 4
       }}>
         <Typography variant="h4" component="h1">
-          Lista de Usuarios
+          Lista de Usuarios ({users.length})
         </Typography>
         <Button 
           variant="contained" 
           color="primary" 
           onClick={() => handleOpenDialog()}
-          startIcon={<span>+</span>}
+          startIcon={!loading && <span>+</span>}
           disabled={loading}
         >
-          AGREGAR USUARIO
+          {loading ? <CircularProgress size={24} /> : 'AGREGAR USUARIO'}
         </Button>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
         </Alert>
-      )}
-
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
-        </Box>
       )}
 
       {users.length === 0 && !loading ? (
@@ -141,12 +145,10 @@ const UserList = () => {
 
       <AddUser
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={() => !loading && setOpenDialog(false)}
         onSubmit={handleSubmitUser}
         onDelete={handleDeleteUser}
         editingUser={editingUser}
-        newUserData={newUserData}
-        setNewUserData={setNewUserData}
         loading={loading}
       />
     </Container>

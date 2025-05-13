@@ -6,16 +6,24 @@ import {
   DialogActions,
   TextField,
   Button,
-  Grid
+  Grid,
+  CircularProgress
 } from '@mui/material';
 
-const AddUser = ({ open, onClose, onSubmit, onDelete, editingUser }) => {
+const AddUser = ({ 
+  open, 
+  onClose, 
+  onSubmit, 
+  onDelete, 
+  editingUser, 
+  loading 
+}) => {
   const [user, setUser] = useState({
     nombre: '',
     email: ''
   });
 
-  // Cargar datos del usuario a editar cuando editingUser cambia
+  // Cargar datos del usuario a editar
   useEffect(() => {
     if (editingUser) {
       setUser({
@@ -23,7 +31,7 @@ const AddUser = ({ open, onClose, onSubmit, onDelete, editingUser }) => {
         email: editingUser.email
       });
     } else {
-      setUser({ nombre: '', email: '' }); // Si no hay usuario, limpiar el form
+      setUser({ nombre: '', email: '' });
     }
   }, [editingUser]);
 
@@ -33,25 +41,26 @@ const AddUser = ({ open, onClose, onSubmit, onDelete, editingUser }) => {
   };
 
   const handleSubmit = () => {
+    if (!user.nombre || !user.email) return;
+    
     const usuarioFinal = editingUser
-      ? { ...editingUser, ...user } // conservar el id si está editando
-      : { ...user, id: Date.now() }; // crear id único si es nuevo
+      ? { ...editingUser, ...user }
+      : { ...user, id: Date.now() };
 
     onSubmit(usuarioFinal);
-    onClose();
-    setUser({ nombre: '', email: '' });
   };
 
   const handleDelete = () => {
-    if (editingUser && editingUser.id) {
+    if (editingUser?.id) {
       onDelete(editingUser.id);
-      onClose();
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{editingUser ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</DialogTitle>
+      <DialogTitle>
+        {editingUser ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}
+      </DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12}>
@@ -62,6 +71,7 @@ const AddUser = ({ open, onClose, onSubmit, onDelete, editingUser }) => {
               value={user.nombre}
               onChange={handleChange}
               required
+              disabled={loading}
             />
           </Grid>
           <Grid item xs={12}>
@@ -73,19 +83,38 @@ const AddUser = ({ open, onClose, onSubmit, onDelete, editingUser }) => {
               value={user.email}
               onChange={handleChange}
               required
+              disabled={loading}
             />
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions>
         {editingUser && (
-          <Button onClick={handleDelete} color="error" sx={{ mr: 'auto' }}>
-            Eliminar
+          <Button 
+            onClick={handleDelete} 
+            color="error" 
+            sx={{ mr: 'auto' }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Eliminar'}
           </Button>
         )}
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSubmit} color="primary" variant="contained">
-          {editingUser ? 'Guardar cambios' : 'Agregar'}
+        <Button onClick={onClose} disabled={loading}>
+          Cancelar
+        </Button>
+        <Button 
+          onClick={handleSubmit} 
+          color="primary" 
+          variant="contained"
+          disabled={loading || !user.nombre || !user.email}
+        >
+          {loading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : editingUser ? (
+            'Guardar cambios'
+          ) : (
+            'Agregar'
+          )}
         </Button>
       </DialogActions>
     </Dialog>

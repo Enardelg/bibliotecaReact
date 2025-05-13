@@ -7,31 +7,30 @@ import {
   TextField,
   Button,
   Grid,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select
+  MenuItem
 } from '@mui/material';
-
-const genres = [
-  'Novela',
-  'Ciencia Ficción',
-  'Fantasía',
-  'Distopía',
-  'Realismo mágico',
-  'Literatura infantil',
-  'Novela romántica',
-  'Novela psicológica'
-];
 
 const AddBook = ({ open, onClose, onSubmit, initialData }) => {
   const [book, setBook] = useState(initialData || {
     titulo: '',
     autor: '',
-    anio: '',
+    año: '',
     genero: '',
     disponible: true
   });
+
+  const generos = [
+    'Ficción',
+    'No ficción',
+    'Ciencia ficción',
+    'Fantasía',
+    'Misterio',
+    'Romance',
+    'Terror',
+    'Biografía',
+    'Historia',
+    'Autoayuda'
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,8 +38,8 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
   };
 
   const handleSubmit = () => {
-    onSubmit(book);
-    onClose();
+    if (!book.titulo || !book.autor || !book.año) return;
+     
   };
 
   return (
@@ -72,35 +71,48 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
             <TextField
               fullWidth
               label="Año de publicación"
-              name="anio"
+              name="año"
               type="number"
-              value={book.anio}
+              value={book.año}
               onChange={handleChange}
               required
             />
           </Grid>
           <Grid item xs={6}>
-            <FormControl fullWidth>
-              <InputLabel>Género</InputLabel>
-              <Select
-                name="genero"
-                value={book.genero}
-                onChange={handleChange}
-                label="Género"
-                required
-              >
-                {genres.map(genre => (
-                  <MenuItem key={genre} value={genre}>{genre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <TextField
+              fullWidth
+              select
+              label="Género"
+              name="genero"
+              value={book.genero}
+              onChange={handleChange}
+              variant="outlined"
+              sx={{ 
+                minWidth: '150px', // Ancho mínimo aumentado
+                '& .MuiInputBase-root': {
+                  height: '56px' // Altura aumentada para coincidir con otros campos
+                }
+              }}
+              required
+            >
+              {generos.map((genero) => (
+                <MenuItem key={genero} value={genero}>
+                  {genero}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSubmit} color="primary" variant="contained">
-          {initialData ? 'Actualizar' : 'Agregar'}
+        <Button 
+          onClick={handleSubmit} 
+          color="primary" 
+          variant="contained"
+          disabled={!book.titulo || !book.autor || !book.año || !book.genero}
+        >
+          {initialData ? 'Guardar Cambios' : 'Agregar'}
         </Button>
       </DialogActions>
     </Dialog>
