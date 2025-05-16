@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Button, 
   Card, 
@@ -8,30 +8,36 @@ import {
   Container,
   Box,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import AddUser from './AddUser';
 
 const UserList = () => {
-  // Cargar usuarios desde localStorage al iniciar
-  const [users, setUsers] = React.useState(() => {
+  const [users, setUsers] = useState(() => {
+    const defaultUsers = [
+      { id: 1, nombre: 'Maria Garcia', email: 'maria@example.com' },
+      { id: 2, nombre: 'Juan Perez', email: 'juan@example.com' }
+    ];
     try {
       const savedUsers = localStorage.getItem('users');
-      return savedUsers ? JSON.parse(savedUsers) : [
-        { id: 1, nombre: 'Maria Garcia', email: 'maria@example.com' },
-        { id: 2, nombre: 'Juan Perez', email: 'juan@example.com' }
-      ];
+      return savedUsers ? JSON.parse(savedUsers) : defaultUsers;
     } catch {
-      return [];
+      return defaultUsers;
     }
   });
 
-  const [openDialog, setOpenDialog] = React.useState(false);
-  const [editingUser, setEditingUser] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Persistir datos en localStorage cuando cambien
   useEffect(() => {
     localStorage.setItem('users', JSON.stringify(users));
   }, [users]);
@@ -40,7 +46,6 @@ const UserList = () => {
     setLoading(true);
     setError(null);
 
-    // Simular tiempo de espera para operación
     setTimeout(() => {
       try {
         setUsers(prevUsers => {
@@ -48,7 +53,7 @@ const UserList = () => {
             ? prevUsers.map(user => 
                 user.id === editingUser.id ? userData : user
               )
-            : [...prevUsers, { ...userData, id: Date.now() }];
+            : [...prevUsers, userData];
           
           return updatedUsers;
         });
@@ -61,23 +66,23 @@ const UserList = () => {
     }, 500);
   };
 
-  const handleOpenDialog = (user = null) => {
-    setEditingUser(user);
-    setOpenDialog(true);
-  };
-
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = () => {
     setLoading(true);
     setTimeout(() => {
       try {
-        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-        setOpenDialog(false);
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
+        setOpenDeleteDialog(false);
       } catch (err) {
         setError('Error al eliminar el usuario');
       } finally {
         setLoading(false);
       }
     }, 500);
+  };
+
+  const handleConfirmDelete = (user) => {
+    setUserToDelete(user);
+    setOpenDeleteDialog(true);
   };
 
   return (
@@ -94,7 +99,10 @@ const UserList = () => {
         <Button 
           variant="contained" 
           color="primary" 
-          onClick={() => handleOpenDialog()}
+          onClick={() => {
+            setEditingUser(null);
+            setOpenDialog(true);
+          }}
           startIcon={!loading && <span>+</span>}
           disabled={loading}
         >
@@ -119,7 +127,12 @@ const UserList = () => {
             .sort((a, b) => a.nombre.localeCompare(b.nombre))
             .map((user) => (
               <Grid item xs={12} sm={6} md={4} key={user.id}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Card sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  '&:hover': { boxShadow: 3 }
+                }}>
                   <CardContent sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" gutterBottom>
                       {user.nombre}
@@ -128,13 +141,32 @@ const UserList = () => {
                       {user.email}
                     </Typography>
                   </CardContent>
-                  <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    display: 'flex', 
+                    justifyContent: 'flex-end', 
+                    gap: 1,
+                    borderTop: '1px solid rgba(0, 0, 0, 0.12)'
+                  }}>
                     <Button 
                       variant="outlined" 
-                      onClick={() => handleOpenDialog(user)}
+                      onClick={() => {
+                        setEditingUser(user);
+                        setOpenDialog(true);
+                      }}
                       disabled={loading}
+                      sx={{ flex: 1 }}
                     >
                       EDITAR
+                    </Button>
+                    <Button 
+                      variant="contained" 
+                      color="error"
+                      onClick={() => handleConfirmDelete(user)}
+                      disabled={loading}
+                      sx={{ flex: 1 }}
+                    >
+                      ELIMINAR
                     </Button>
                   </Box>
                 </Card>
@@ -147,10 +179,38 @@ const UserList = () => {
         open={openDialog}
         onClose={() => !loading && setOpenDialog(false)}
         onSubmit={handleSubmitUser}
-        onDelete={handleDeleteUser}
         editingUser={editingUser}
         loading={loading}
       />
+
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => !loading && setOpenDeleteDialog(false)}
+      >
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro que deseas eliminar permanentemente al usuario <strong>{userToDelete?.nombre}</strong> ({userToDelete?.email})?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setOpenDeleteDialog(false)} 
+            disabled={loading}
+            color="primary"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleDeleteUser} 
+            color="error" 
+            disabled={loading}
+            variant="contained"
+          >
+            {loading ? <CircularProgress size={24} /> : 'Confirmar Eliminación'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
