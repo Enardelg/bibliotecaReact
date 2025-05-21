@@ -18,10 +18,10 @@ const AppBar = ({ darkMode, toggleDarkMode, activeView, setActiveView }) => {
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <IconButton color="inherit" onClick={toggleDarkMode}>
-            {darkMode ? <Brightness7 /> : <Brightness4 />}
+            {darkMode ? <Brightness4 /> : <Brightness7 />}
           </IconButton>
           <Typography variant="body2" sx={{ mr: 1 }}>
-            {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
+            {darkMode ? 'Modo Oscuro' : 'Modo Claro'}
           </Typography>
           <Switch checked={darkMode} onChange={toggleDarkMode} color="secondary" />
         </Box>

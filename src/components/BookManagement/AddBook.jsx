@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 
 const AddBook = ({ open, onClose, onSubmit, initialData }) => {
-  const [book, setBook] = useState(initialData || {
+  const [book, setBook] = useState({
     titulo: '',
     autor: '',
     año: '',
@@ -32,14 +32,39 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
     'Autoayuda'
   ];
 
+  useEffect(() => {
+    if (open) {
+      setBook(initialData || {
+        titulo: '',
+        autor: '',
+        año: '',
+        genero: '',
+        disponible: true
+      });
+    }
+  }, [open, initialData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBook(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = () => {
-    if (!book.titulo || !book.autor || !book.año) return;
-     
+    if (!book.titulo || !book.autor || !book.año || !book.genero) return;
+
+    onSubmit(book);
+
+    if (!initialData) {
+      setBook({
+        titulo: '',
+        autor: '',
+        año: '',
+        genero: '',
+        disponible: true
+      });
+    }
+
+    onClose();
   };
 
   return (
@@ -88,9 +113,9 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
               onChange={handleChange}
               variant="outlined"
               sx={{ 
-                minWidth: '150px', // Ancho mínimo aumentado
+                minWidth: '150px',
                 '& .MuiInputBase-root': {
-                  height: '56px' // Altura aumentada para coincidir con otros campos
+                  height: '56px'
                 }
               }}
               required

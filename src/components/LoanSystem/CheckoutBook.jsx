@@ -26,7 +26,7 @@ const CheckoutBook = ({ open, onClose, book, users, onCheckout }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Prestar Libro</DialogTitle>
+      <DialogTitle>Prestar Libro lalala</DialogTitle>
       <DialogContent>
         {book && (
           <Box sx={{ mb: 3 }}>
@@ -38,7 +38,7 @@ const CheckoutBook = ({ open, onClose, book, users, onCheckout }) => {
         )}
         
         <FormControl fullWidth>
-          <InputLabel>Seleccionar Usuario</InputLabel>
+          <InputLabel>Seleccionar Usuario </InputLabel>
           <Select
             value={selectedUser}
             onChange={(e) => setSelectedUser(e.target.value)}

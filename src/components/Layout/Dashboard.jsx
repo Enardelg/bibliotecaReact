@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Container, Typography, Button } from '@mui/material';
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  Button,
+  Snackbar,
+  Alert 
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
 import BookList from '../BookManagement/BookList';
@@ -7,37 +14,51 @@ import AddBook from '../BookManagement/AddBook';
 import BookStats from '../BookManagement/BookStats';
 import UserList from '../UserManagement/UserList';
 import AddUser from '../UserManagement/AddUser';
-import CheckoutBook from '../LoanSystem/CheckoutBook';
 import ReturnBook from '../LoanSystem/ReturnBook';
 
-const Dashboard = ({ activeView, books, users, setBooks, setUsers }) => {
+const Dashboard = ({ 
+  activeView, 
+  books, 
+  users,
+  onBookSubmit,
+  onUserSubmit,
+  onDeleteBook,
+  onCheckoutBook,
+  onReturnBook,
+  onDeleteUser
+}) => {
   const [addBookOpen, setAddBookOpen] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  const handleAddBook = (newBook) => {
-    if (newBook.id) {
-      setBooks(books.map(b => b.id === newBook.id ? newBook : b));
-    } else {
-      const id = Math.max(...books.map(b => b.id), 0) + 1;
-      setBooks([...books, { ...newBook, id }]);
-    }
+  const handleAddUser = (newUser) => {
+    onUserSubmit(newUser);
+    setSnackbarMessage('Usuario agregado exitosamente');
+    setSnackbarOpen(true);
+    setAddUserOpen(false);
   };
 
-  const handleDeleteBook = (id) => {
-    setBooks(books.filter(book => book.id !== id));
+  const handleDeleteUser = (userId) => {
+    onDeleteUser(userId);
+    setSnackbarMessage('Usuario eliminado exitosamente');
+    setSnackbarOpen(true);
   };
 
-  const handleEditBook = (book) => {
-    setSelectedBook(book);
-    setAddBookOpen(true);
+  const handleCheckoutSubmit = (bookId, userId) => {
+    const user = users.find(u => u.id === userId);
+    onCheckoutBook(bookId, userId);
+    setSnackbarMessage(`Libro prestado a: ${user.nombre}`);
+    setSnackbarOpen(true);
   };
 
-  const handleCheckout = (bookId) => {
-    setSelectedBook(books.find(b => b.id === bookId));
-    setCheckoutOpen(true);
+  const handleReturnSubmit = (bookId) => {
+    onReturnBook(bookId);
+    setSnackbarMessage('Libro devuelto exitosamente');
+    setSnackbarOpen(true);
+    setReturnOpen(false);
   };
 
   return (
@@ -71,29 +92,23 @@ const Dashboard = ({ activeView, books, users, setBooks, setUsers }) => {
             </Box>
             <BookList 
               books={books} 
-              onEdit={handleEditBook}
-              onDelete={handleDeleteBook}
-              onCheckout={handleCheckout}
+              users={users}
+              onEdit={(book) => {
+                setSelectedBook(book);
+                setAddBookOpen(true);
+              }}
+              onDelete={onDeleteBook}
+              onCheckout={handleCheckoutSubmit}
             />
           </>
         )}
 
         {activeView === 'users' && (
-          <>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-              <Typography variant="h4" gutterBottom>
-                Gestión de Usuarios
-              </Typography>
-              {/* <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setAddUserOpen(true)}
-              >
-                Agregar Usuario
-              </Button> */}
-            </Box>
-            <UserList users={users} books={books} />
-          </>
+          <UserList 
+            users={users} 
+            onUserSubmit={handleAddUser} 
+            onDeleteUser={handleDeleteUser}
+          />
         )}
 
         {activeView === 'loans' && (
@@ -102,15 +117,13 @@ const Dashboard = ({ activeView, books, users, setBooks, setUsers }) => {
               Sistema de Préstamos
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-              <Button
-                variant="contained"
-                onClick={() => setCheckoutOpen(true)}
-              >
-                Prestar Libro
+              <Button variant="contained" onClick={() => setAddUserOpen(true)}>
+                Agregar Usuario
               </Button>
               <Button
                 variant="contained"
                 onClick={() => setReturnOpen(true)}
+                disabled={books.filter(b => !b.disponible).length === 0}
               >
                 Devolver Libro
               </Button>
@@ -121,55 +134,47 @@ const Dashboard = ({ activeView, books, users, setBooks, setUsers }) => {
         <AddBook
           open={addBookOpen}
           onClose={() => setAddBookOpen(false)}
-          onSubmit={handleAddBook}
+          onSubmit={(bookData) => {
+            onBookSubmit(bookData);
+            setSnackbarMessage(bookData.id ? 'Libro actualizado exitosamente' : 'Libro agregado exitosamente');
+            setSnackbarOpen(true);
+            setAddBookOpen(false);
+          }}
           initialData={selectedBook}
         />
 
         <AddUser
           open={addUserOpen}
           onClose={() => setAddUserOpen(false)}
-          onSubmit={(newUser) => {
-            const id = Math.max(...users.map(u => u.id), 0) + 1;
-            setUsers([...users, { ...newUser, id, librosPrestados: [] }]);
-          }}
-        />
-
-        <CheckoutBook
-          open={checkoutOpen}
-          onClose={() => setCheckoutOpen(false)}
-          book={selectedBook}
-          users={users}
-          onCheckout={(userId) => {
-            setBooks(books.map(b => 
-              b.id === selectedBook.id ? { ...b, disponible: false } : b
-            ));
-            setUsers(users.map(u => 
-              u.id === userId 
-                ? { ...u, librosPrestados: [...u.librosPrestados, selectedBook.id] } 
-                : u
-            ));
-          }}
+          onSubmit={handleAddUser}
         />
 
         <ReturnBook
           open={returnOpen}
           onClose={() => setReturnOpen(false)}
           books={books.filter(b => !b.disponible)}
-          users={users}
-          onReturn={(bookId, userId) => {
-            setBooks(books.map(b => 
-              b.id === bookId ? { ...b, disponible: true } : b
-            ));
-            setUsers(users.map(u => 
-              u.id === userId 
-                ? { ...u, librosPrestados: u.librosPrestados.filter(id => id !== bookId) } 
-                : u
-            ));
-          }}
+          onSubmit={handleReturnSubmit}
         />
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={() => setSnackbarOpen(false)} 
+            severity="success" 
+            sx={{ width: '100%' }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );
 };
 
 export default Dashboard;
+
+
