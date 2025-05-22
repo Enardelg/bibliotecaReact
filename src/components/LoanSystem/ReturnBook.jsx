@@ -13,22 +13,29 @@ import {
   Box
 } from '@mui/material';
 
-const ReturnBook = ({ open, onClose, books, users, onReturn }) => {
+const ReturnBook = ({ open, onClose, books, users, onSubmit }) => {
   const [selectedBook, setSelectedBook] = useState('');
-  const [selectedUser, setSelectedUser] = useState('');
+  
+  // Filtrar solo libros que están prestados
+  const borrowedBooks = books.filter(book => !book.disponible);
+  
+  // Obtener usuario que tiene prestado el libro seleccionado
+  const getUserForBook = (bookId) => {
+    if (!bookId) return null;
+    const book = books.find(b => b.id === parseInt(bookId));
+    if (!book || !book.prestadoA) return null;
+    return users.find(user => user.id === book.prestadoA.id);
+  };
+
+  const selectedUser = getUserForBook(selectedBook);
 
   const handleReturn = () => {
-    if (selectedBook && selectedUser) {
-      onReturn(parseInt(selectedBook), parseInt(selectedUser));
+    if (selectedBook) {
+      onSubmit(parseInt(selectedBook));
       setSelectedBook('');
-      setSelectedUser('');
       onClose();
     }
   };
-
-  const availableUsers = selectedBook 
-    ? users.filter(user => user.librosPrestados.includes(parseInt(selectedBook)))
-    : [];
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -39,35 +46,27 @@ const ReturnBook = ({ open, onClose, books, users, onReturn }) => {
             <InputLabel>Seleccionar Libro</InputLabel>
             <Select
               value={selectedBook}
-              onChange={(e) => {
-                setSelectedBook(e.target.value);
-                setSelectedUser('');
-              }}
+              onChange={(e) => setSelectedBook(e.target.value)}
               label="Seleccionar Libro"
             >
-              {books.map(book => (
+              {borrowedBooks.map(book => (
                 <MenuItem key={book.id} value={book.id}>
-                  {book.titulo} ({book.autor})
+                  {book.titulo} ({book.autor}) - Prestado a: {book.prestadoA?.nombre || 'Usuario desconocido'}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel>Seleccionar Usuario</InputLabel>
-            <Select
-              value={selectedUser}
-              onChange={(e) => setSelectedUser(e.target.value)}
-              label="Seleccionar Usuario"
-              disabled={!selectedBook || availableUsers.length === 0}
-            >
-              {availableUsers.map(user => (
-                <MenuItem key={user.id} value={user.id}>
-                  {user.nombre} ({user.email})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {selectedUser && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1">
+                Usuario que tiene el libro:
+              </Typography>
+              <Typography>
+                {selectedUser.nombre} ({selectedUser.email})
+              </Typography>
+            </Box>
+          )}
         </Box>
       </DialogContent>
       <DialogActions>
@@ -76,7 +75,7 @@ const ReturnBook = ({ open, onClose, books, users, onReturn }) => {
           onClick={handleReturn} 
           color="primary" 
           variant="contained"
-          disabled={!selectedBook || !selectedUser}
+          disabled={!selectedBook}
         >
           Confirmar Devolución
         </Button>

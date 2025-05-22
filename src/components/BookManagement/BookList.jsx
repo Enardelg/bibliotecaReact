@@ -13,7 +13,10 @@ import {
   DialogContent,
   DialogActions,
   MenuItem,
-  TextField
+  TextField,
+  Snackbar,
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import { Book as BookIcon } from '@mui/icons-material';
 
@@ -23,17 +26,35 @@ const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const getBorrowerInfo = (userId) => {
+    const user = users.find(u => u.id === userId);
+    return user ? `${user.nombre} (${user.email})` : 'Usuario desconocido';
+  };
 
   const handleCheckoutClick = (bookId) => {
     setSelectedBookId(bookId);
     setCheckoutDialogOpen(true);
+    setSelectedUserId('');
   };
 
-  const handleCheckoutConfirm = () => {
+  const handleCheckoutConfirm = async () => {
     if (selectedBookId && selectedUserId) {
-      onCheckout(selectedBookId, parseInt(selectedUserId));
-      setCheckoutDialogOpen(false);
-      setSelectedUserId('');
+      setLoading(true);
+      try {
+        await onCheckout(selectedBookId, parseInt(selectedUserId));
+        setSnackbarMessage('Libro prestado exitosamente');
+        setSnackbarOpen(true);
+        setCheckoutDialogOpen(false);
+      } catch (error) {
+        setSnackbarMessage('Error al prestar el libro');
+        setSnackbarOpen(true);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -57,7 +78,7 @@ const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
                   Año: {book.año} | Género: {book.genero}
                 </Typography>
                 <Chip 
-                  label={book.disponible ? 'Disponible' : `Prestado a: ${book.prestadoA?.nombre || 'Usuario desconocido'}`} 
+                  label={book.disponible ? 'Disponible' : `Prestado a: ${getBorrowerInfo(book.userId)}`} 
                   color={book.disponible ? 'success' : 'error'} 
                   size="small" 
                 />
@@ -96,7 +117,7 @@ const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
       </Grid>
 
       {/* Diálogo para seleccionar usuario al prestar */}
-      <Dialog open={checkoutDialogOpen} onClose={() => setCheckoutDialogOpen(false)}>
+      <Dialog open={checkoutDialogOpen} onClose={() => !loading && setCheckoutDialogOpen(false)}>
         <DialogTitle>Prestar libro</DialogTitle>
         <DialogContent>
           <TextField
@@ -106,6 +127,7 @@ const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
             value={selectedUserId}
             onChange={(e) => setSelectedUserId(e.target.value)}
             sx={{ mt: 2 }}
+            disabled={loading}
           >
             <MenuItem value="">
               <em>Seleccione un usuario</em>
@@ -118,13 +140,15 @@ const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
           </TextField>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCheckoutDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={() => setCheckoutDialogOpen(false)} disabled={loading}>
+            Cancelar
+          </Button>
           <Button 
             onClick={handleCheckoutConfirm} 
             color="primary"
-            disabled={!selectedUserId}
+            disabled={!selectedUserId || loading}
           >
-            Confirmar préstamo
+            {loading ? <CircularProgress size={24} /> : 'Confirmar préstamo'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -151,6 +175,21 @@ const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
