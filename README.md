@@ -1,12 +1,13 @@
 # React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+`Git Hub Pages`
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1- Ingresar a esta página e instalar gitHub pages --> https://www.npmjs.com/package/gh-pages
+2- En pagckage.json agregar en la segunda linea --> 
+  "homepage": "https://tuUsuario.github.io/nombreRepositorio",
+   En scripts, antes de la propiedad build: "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
+3- En vite.config.js antes de puglins --> base: "/bibliotecaReact",
+4- ejecutar npm run deploy --> Published == exitoso
+5- En Settings, pages --> luego de unos minutos se prepara el link que renderiza el proyecto, es normal que no se vea nada solo hay que inistir y actualizar
+6- Disfruta del deploy en gitHub 
