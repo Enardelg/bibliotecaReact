@@ -73,6 +73,27 @@ const App = () => {
       mode: darkMode ? 'dark' : 'light',
       primary: blue,
       secondary: deepOrange,
+      background: {
+        default: darkMode ? '#121212' : '#e5e5e5', // Cambio solicitado aquí
+        paper: darkMode ? '#1e1e1e' : '#ffffff',
+      },
+    },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            backgroundColor: darkMode ? '#121212' : '#e5e5e5', // Fondo para el body
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
+            border: darkMode ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(0, 0, 0, 0.12)',
+          },
+        },
+      },
     },
   });
 
@@ -141,7 +162,11 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ 
+        display: 'flex',
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default
+      }}>
         <AppBar 
           darkMode={darkMode} 
           toggleDarkMode={toggleDarkMode} 

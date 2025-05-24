@@ -1,9 +1,34 @@
 import React, { useState } from 'react';
 import {
-  Button, Card, CardContent, Typography, Grid,
-  Container, Box, Alert, CircularProgress,
-  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
+  Button, 
+  Card, 
+  CardContent, 
+  Typography, 
+  Grid,
+  Container, 
+  Box, 
+  Alert, 
+  CircularProgress,
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogContentText, 
+  DialogActions,
+  Avatar,
+  Chip,
+  Divider,
+  Paper,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText
 } from '@mui/material';
+import { 
+  Person as PersonIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon
+} from '@mui/icons-material';
 import AddUser from './AddUser';
 
 const UserList = ({ users, onUserSubmit, onDeleteUser }) => {
@@ -50,61 +75,162 @@ const UserList = ({ users, onUserSubmit, onDeleteUser }) => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4">Lista de Usuarios ({users.length})</Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 4,
+        p: 3,
+        bgcolor: 'background.paper',
+        borderRadius: 1,
+        boxShadow: 1
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <PersonIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
+          <Typography variant="h4" component="h1">
+            Gestión de Usuarios
+          </Typography>
+        </Box>
         <Button
           variant="contained"
           color="primary"
+          startIcon={<AddIcon />}
           onClick={() => {
             setEditingUser(null);
             setOpenDialog(true);
           }}
           disabled={loading}
+          sx={{ height: 48 }}
         >
-          {loading ? <CircularProgress size={24} /> : 'AGREGAR USUARIO'}
+          {loading ? <CircularProgress size={24} /> : 'Nuevo Usuario'}
         </Button>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }} 
+          onClose={() => setError(null)}
+          elevation={3}
+        >
           {error}
         </Alert>
       )}
 
       {users.length === 0 && !loading ? (
-        <Alert severity="info">
-          No hay usuarios registrados. Agrega tu primer usuario.
-        </Alert>
+        <Paper elevation={3} sx={{ 
+          p: 4, 
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
+          <PersonIcon color="disabled" sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            No hay usuarios registrados
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Comienza agregando tu primer usuario
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setEditingUser(null);
+              setOpenDialog(true);
+            }}
+            sx={{ width: 'fit-content' }}
+          >
+            Agregar Usuario
+          </Button>
+        </Paper>
       ) : (
         <Grid container spacing={3}>
           {users.map((user) => (
             <Grid item xs={12} sm={6} md={4} key={user.id}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{user.nombre}</Typography>
-                  <Typography variant="body2" color="text.secondary">{user.email}</Typography>
-                </CardContent>
-                <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setEditingUser(user);
-                      setOpenDialog(true);
-                    }}
-                    disabled={loading}
-                  >
-                    EDITAR
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => handleConfirmDelete(user)}
-                    disabled={loading}
-                  >
-                    ELIMINAR
-                  </Button>
-                </Box>
-              </Card>
+              <Paper elevation={3} sx={{ height: '100%' }}>
+                <Card sx={{ 
+                  height: '100%', 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  border: 'none'
+                }}>
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar sx={{ 
+                        bgcolor: 'primary.main', 
+                        width: 48, 
+                        height: 48,
+                        mr: 2,
+                        fontSize: '1.1rem',
+                        fontWeight: 500
+                      }}>
+                        {user.nombre.charAt(0)}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {user.nombre}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {user.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mt: 2
+                    }}>
+                      <Chip
+                        label={`ID: ${user.id}`}
+                        size="small"
+                        variant="outlined"
+                        color="default"
+                        sx={{ 
+                          mr: 1,
+                          px: 1,
+                          height: 28,
+                          '& .MuiChip-label': {
+                            px: 0.8,
+                            fontSize: '0.8rem'
+                          }
+                        }}
+                      />
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size="small"
+                          startIcon={<EditIcon fontSize="small" />}
+                          variant="outlined"
+                          onClick={() => {
+                            setEditingUser(user);
+                            setOpenDialog(true);
+                          }}
+                          disabled={loading}
+                          sx={{ minWidth: 90 }}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          size="small"
+                          startIcon={<DeleteIcon fontSize="small" />}
+                          color="error"
+                          variant="contained"
+                          onClick={() => handleConfirmDelete(user)}
+                          disabled={loading}
+                          sx={{ minWidth: 90 }}
+                        >
+                          Eliminar
+                        </Button>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Paper>
             </Grid>
           ))}
         </Grid>
@@ -118,18 +244,45 @@ const UserList = ({ users, onUserSubmit, onDeleteUser }) => {
         loading={loading}
       />
 
-      <Dialog open={openDeleteDialog} onClose={() => !loading && setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            ¿Estás seguro que deseas eliminar al usuario <strong>{userToDelete?.nombre}</strong>?
-          </DialogContentText>
+      <Dialog 
+        open={openDeleteDialog} 
+        onClose={() => !loading && setOpenDeleteDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          bgcolor: 'error.main', 
+          color: 'error.contrastText',
+          py: 2
+        }}>
+          Confirmar eliminación
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <PersonIcon color="error" sx={{ mr: 2 }} />
+            <Typography variant="body1">
+              ¿Estás seguro que deseas eliminar al usuario <strong>{userToDelete?.nombre}</strong>?
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            Esta acción no se puede deshacer y afectará cualquier préstamo asociado.
+          </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)} disabled={loading}>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setOpenDeleteDialog(false)} 
+            disabled={loading}
+            variant="outlined"
+          >
             Cancelar
           </Button>
-          <Button onClick={handleDeleteUser} color="error" variant="contained" disabled={loading}>
+          <Button 
+            onClick={handleDeleteUser} 
+            color="error" 
+            variant="contained"
+            disabled={loading}
+            sx={{ ml: 1 }}
+          >
             {loading ? <CircularProgress size={24} /> : 'Eliminar'}
           </Button>
         </DialogActions>

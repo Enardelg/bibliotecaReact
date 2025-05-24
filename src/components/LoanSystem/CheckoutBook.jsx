@@ -26,7 +26,7 @@ const CheckoutBook = ({ open, onClose, book, users, onCheckout }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Prestar Libro lalala</DialogTitle>
+      <DialogTitle>Prestar Libro</DialogTitle>
       <DialogContent>
         {book && (
           <Box sx={{ mb: 3 }}>
