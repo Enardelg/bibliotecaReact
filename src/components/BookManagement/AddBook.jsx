@@ -19,7 +19,7 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
     disponible: true
   });
 
-  const generos = [
+  const [generos, setGeneros] = useState([
     'Ficción',
     'No ficción',
     'Ciencia ficción',
@@ -30,7 +30,17 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
     'Biografía',
     'Historia',
     'Autoayuda'
-  ];
+  ]);
+
+  const [nuevoGenero, setNuevoGenero] = useState('');
+
+  const agregarGenero = () => {
+    const trimmed = nuevoGenero.trim();
+    if (trimmed && !generos.includes(trimmed)) {
+      setGeneros(prev => [...prev, trimmed]);
+      setNuevoGenero('');
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -126,6 +136,16 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
                 </MenuItem>
               ))}
             </TextField>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Agregar nuevo género"
+              value={nuevoGenero}
+              onChange={(e) => setNuevoGenero(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && agregarGenero()}
+              placeholder="Escribe un nuevo género y presiona Enter"
+            />
           </Grid>
         </Grid>
       </DialogContent>

@@ -25,9 +25,17 @@ import {
   ListItemAvatar,
   ListItemText
 } from '@mui/material';
+import BookSearch from './BookSearch';
+
 import { Book as BookIcon, Edit, Delete, Send } from '@mui/icons-material';
 
 const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredBooks = books.filter(book =>
+    book.titulo.toLowerCase().includes(searchTerm) ||
+    book.autor.toLowerCase().includes(searchTerm) ||
+    book.genero.toLowerCase().includes(searchTerm)
+  );
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState('');
@@ -65,8 +73,9 @@ const BookList = ({ books, onEdit, onDelete, onCheckout, users }) => {
 
   return (
     <>
+      <BookSearch onSearch={setSearchTerm} />
       <Grid container spacing={3}>
-        {books.map((book) => (
+        {filteredBooks.map((book) => (
           <Grid item xs={12} sm={6} md={4} key={book.id}>
             <Paper elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: 'none' }}>

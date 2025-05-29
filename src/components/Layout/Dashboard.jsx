@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  Typography, 
+import {
+  Box,
+  Container,
+  Typography,
   Button,
   Snackbar,
   Alert,
@@ -33,9 +33,9 @@ import UserList from '../UserManagement/UserList';
 import AddUser from '../UserManagement/AddUser';
 import ReturnBook from '../LoanSystem/ReturnBook';
 
-const Dashboard = ({ 
-  activeView, 
-  books, 
+const Dashboard = ({
+  activeView,
+  books,
   users,
   onBookSubmit,
   onUserSubmit,
@@ -72,13 +72,13 @@ const Dashboard = ({
 
   const handleReturnSubmit = (bookId) => {
     const returnedBook = books.find(book => book.id === bookId);
-    const user = returnedBook?.prestadoA ? 
+    const user = returnedBook?.prestadoA ?
       users.find(u => u.id === returnedBook.prestadoA.id) : null;
-    
+
     onReturnBook(bookId);
     setSnackbarMessage(
-      user 
-        ? `Libro devuelto por: ${user.nombre}` 
+      user
+        ? `Libro devuelto por: ${user.nombre}`
         : 'Libro devuelto exitosamente'
     );
     setSnackbarOpen(true);
@@ -90,98 +90,104 @@ const Dashboard = ({
       <Container maxWidth="xl">
         {activeView === 'dashboard' && (
           <>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <LibraryBooksIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-              <Typography variant="h4" component="h1">
-                Resumen de la Biblioteca
-              </Typography>
-            </Box>
-            <BookStats books={books} users={users} />
+            <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <LibraryBooksIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
+                <Typography variant="h4" component="h1">
+                  Resumen de la Biblioteca
+                </Typography>
+              </Box>
+              <BookStats books={books} users={users} />
+            </Paper>
           </>
         )}
 
         {activeView === 'books' && (
           <>
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              mb: 3 
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <BookIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-                <Typography variant="h4" component="h1">
-                  Gestión de Libros
-                </Typography>
+            <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 3
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <BookIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
+                  <Typography variant="h4" component="h1">
+                    Gestión de Libros
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setSelectedBook(null);
+                    setAddBookOpen(true);
+                  }}
+                  sx={{ height: 48 }}
+                >
+                  Agregar Libro
+                </Button>
               </Box>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  setSelectedBook(null);
+              <BookList
+                books={books}
+                users={users}
+                onEdit={(book) => {
+                  setSelectedBook(book);
                   setAddBookOpen(true);
                 }}
-                sx={{ height: 48 }}
-              >
-                Agregar Libro
-              </Button>
-            </Box>
-            <BookList 
-              books={books} 
-              users={users}
-              onEdit={(book) => {
-                setSelectedBook(book);
-                setAddBookOpen(true);
-              }}
-              onDelete={onDeleteBook}
-              onCheckout={handleCheckoutSubmit}
-            />
+                onDelete={onDeleteBook}
+                onCheckout={handleCheckoutSubmit}
+              />
+            </Paper>
           </>
         )}
 
         {activeView === 'users' && (
-          <UserList 
-            users={users} 
-            onUserSubmit={handleAddUser} 
+          <UserList
+            users={users}
+            onUserSubmit={handleAddUser}
             onDeleteUser={handleDeleteUser}
           />
         )}
 
         {activeView === 'loans' && (
           <>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <SwapHorizIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-              <Typography variant="h4" component="h1">
-                Sistema de Préstamos
-              </Typography>
-            </Box>
-            
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={6}>
-                <Button 
-                  fullWidth
-                  variant="contained" 
-                  onClick={() => setAddUserOpen(true)}
-                  startIcon={<PeopleAltIcon />}
-                  sx={{ py: 2, height: '100%' }}
-                >
-                  Agregar Usuario
-                </Button>
+            <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <SwapHorizIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
+                <Typography variant="h4" component="h1">
+                  Sistema de Préstamos
+                </Typography>
+              </Box>
+
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} sm={6}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={() => setAddUserOpen(true)}
+                    startIcon={<PeopleAltIcon />}
+                    sx={{ py: 2, height: '100%' }}
+                  >
+                    Agregar Usuario
+                  </Button>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => setReturnOpen(true)}
+                    disabled={books.filter(b => !b.disponible).length === 0}
+                    startIcon={<BookIcon />}
+                    sx={{ py: 2, height: '100%' }}
+                  >
+                    Devolver Libro
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => setReturnOpen(true)}
-                  disabled={books.filter(b => !b.disponible).length === 0}
-                  startIcon={<BookIcon />}
-                  sx={{ py: 2, height: '100%' }}
-                >
-                  Devolver Libro
-                </Button>
-              </Grid>
-            </Grid>
+            </Paper>
 
             <Paper elevation={3} sx={{ mb: 4, p: 0 }}>
               <CardHeader
@@ -196,33 +202,33 @@ const Dashboard = ({
                   </Avatar>
                 }
                 action={
-                  <Chip 
+                  <Chip
                     label={`${books.filter(b => !b.disponible).length} prestados`}
                     color="secondary"
                     sx={{ mr: 2 }}
                   />
                 }
-                sx={{ 
-                  backgroundColor: (theme) => theme.palette.mode === 'light' 
-                    ? theme.palette.grey[100] 
+                sx={{
+                  backgroundColor: (theme) => theme.palette.mode === 'light'
+                    ? theme.palette.grey[100]
                     : theme.palette.grey[800],
                   borderBottom: '1px solid',
                   borderColor: 'divider'
                 }}
               />
-              
+
               <CardContent sx={{ p: 0 }}>
                 {books.filter(b => !b.disponible).length === 0 ? (
-                  <Box sx={{ 
-                    textAlign: 'center', 
+                  <Box sx={{
+                    textAlign: 'center',
                     py: 4,
-                    backgroundColor: (theme) => theme.palette.mode === 'light' 
-                      ? theme.palette.grey[50] 
+                    backgroundColor: (theme) => theme.palette.mode === 'light'
+                      ? theme.palette.grey[50]
                       : theme.palette.grey[900]
                   }}>
                     <BookIcon color="disabled" sx={{ fontSize: 60, mb: 2 }} />
-                    <Typography 
-                      variant="h6" 
+                    <Typography
+                      variant="h6"
                       color="text.secondary"
                       gutterBottom
                     >
@@ -240,36 +246,36 @@ const Dashboard = ({
                         <Grid item xs={12} sm={6} md={4} key={book.id}>
                           <Card variant="outlined" sx={{ height: '100%' }}>
                             <CardContent>
-                              <Box sx={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                mb: 2 
+                              <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                mb: 2
                               }}>
                                 <BookIcon color="action" sx={{ mr: 1 }} />
-                                <Typography 
-                                  variant="subtitle1" 
+                                <Typography
+                                  variant="subtitle1"
                                   component="div"
                                   sx={{ fontWeight: 500 }}
                                 >
                                   {book.titulo}
                                 </Typography>
                               </Box>
-                              
-                              <Typography 
-                                variant="body2" 
+
+                              <Typography
+                                variant="body2"
                                 color="text.secondary"
                                 sx={{ mb: 1 }}
                               >
                                 {book.autor}
                               </Typography>
-                              
+
                               <Divider sx={{ my: 1.5 }} />
-                              
+
                               <List dense disablePadding>
                                 <ListItem sx={{ px: 0 }}>
                                   <ListItemAvatar>
-                                    <Avatar sx={{ 
-                                      width: 32, 
+                                    <Avatar sx={{
+                                      width: 32,
                                       height: 32,
                                       bgcolor: 'primary.main'
                                     }}>
@@ -290,10 +296,10 @@ const Dashboard = ({
                                   />
                                 </ListItem>
                               </List>
-                              
-                              <Box sx={{ 
-                                mt: 2, 
-                                display: 'flex', 
+
+                              <Box sx={{
+                                mt: 2,
+                                display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center'
                               }}>
@@ -303,8 +309,8 @@ const Dashboard = ({
                                   size="small"
                                   variant="outlined"
                                 />
-                                <Typography 
-                                  variant="caption" 
+                                <Typography
+                                  variant="caption"
                                   color="text.secondary"
                                 >
                                   ID: {book.id}
@@ -327,8 +333,8 @@ const Dashboard = ({
           onSubmit={(bookData) => {
             onBookSubmit(bookData);
             setSnackbarMessage(
-              bookData.id 
-                ? 'Libro actualizado exitosamente' 
+              bookData.id
+                ? 'Libro actualizado exitosamente'
                 : 'Libro agregado exitosamente'
             );
             setSnackbarOpen(true);
@@ -357,9 +363,9 @@ const Dashboard = ({
           onClose={() => setSnackbarOpen(false)}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          <Alert 
-            onClose={() => setSnackbarOpen(false)} 
-            severity="success" 
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity="success"
             sx={{ width: '100%' }}
           >
             {snackbarMessage}
@@ -371,5 +377,3 @@ const Dashboard = ({
 };
 
 export default Dashboard;
-
-

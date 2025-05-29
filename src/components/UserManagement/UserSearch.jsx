@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  TextField, 
-  InputAdornment, 
-  IconButton,
-  Box
-} from '@mui/material';
+import { TextField, InputAdornment, IconButton, Box } from '@mui/material';
 import { Search, Clear } from '@mui/icons-material';
 
 const UserSearch = ({ onSearch }) => {
@@ -13,7 +8,7 @@ const UserSearch = ({ onSearch }) => {
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    onSearch(value);
+    onSearch(value.toLowerCase());
   };
 
   const clearSearch = () => {
@@ -26,7 +21,7 @@ const UserSearch = ({ onSearch }) => {
       <TextField
         fullWidth
         variant="outlined"
-        placeholder="Buscar usuarios por nombre o email..."
+        placeholder="Buscar por nombre o email..."
         value={searchTerm}
         onChange={handleSearch}
         InputProps={{
