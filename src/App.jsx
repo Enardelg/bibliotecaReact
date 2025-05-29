@@ -166,7 +166,9 @@ const App = () => {
         display: 'flex',
         minHeight: '100vh',
         backgroundColor: theme.palette.background.default
-      }}>
+      }}
+        translate="no"
+      >
         <AppBar 
           darkMode={darkMode} 
           toggleDarkMode={toggleDarkMode} 
