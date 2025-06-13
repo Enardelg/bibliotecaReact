@@ -10,12 +10,14 @@ import Dashboard from './components/Layout/Dashboard';
 
 const BOOKS_STORAGE_KEY = 'library-books-v2';
 const USERS_STORAGE_KEY = 'library-users-v2';
+const GENRES_STORAGE_KEY = 'library-genres-v1';
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [activeView, setActiveView] = useState('dashboard');
   const [books, setBooks] = useState([]);
   const [users, setUsers] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -23,6 +25,7 @@ const App = () => {
       try {
         const savedBooks = localStorage.getItem(BOOKS_STORAGE_KEY);
         const savedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+        const savedGenres = localStorage.getItem(GENRES_STORAGE_KEY);
 
         if (savedBooks) {
           setBooks(JSON.parse(savedBooks));
@@ -46,6 +49,18 @@ const App = () => {
           setUsers(initialUsers);
           localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(initialUsers));
         }
+
+        if (savedGenres) {
+          setGenres(JSON.parse(savedGenres));
+        } else {
+          const defaultGenres = [
+            'Ficción', 'No ficción', 'Ciencia ficción',
+            'Fantasía', 'Misterio', 'Romance',
+            'Terror', 'Biografía', 'Historia', 'Autoayuda'
+          ];
+          setGenres(defaultGenres);
+          localStorage.setItem(GENRES_STORAGE_KEY, JSON.stringify(defaultGenres));
+        }
       } catch (error) {
         console.error("Error cargando datos:", error);
       } finally {
@@ -68,36 +83,11 @@ const App = () => {
     }
   }, [users, isInitialized]);
 
-  const theme = createTheme({
-    palette: {
-      mode: darkMode ? 'dark' : 'light',
-      primary: blue,
-      secondary: deepOrange,
-      background: {
-        default: darkMode ? '#121212' : '#e5e5e5', // Cambio solicitado aquí
-        paper: darkMode ? '#1e1e1e' : '#ffffff',
-      },
-    },
-    components: {
-      MuiCssBaseline: {
-        styleOverrides: {
-          body: {
-            backgroundColor: darkMode ? '#121212' : '#e5e5e5', // Fondo para el body
-          },
-        },
-      },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-            border: darkMode ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(0, 0, 0, 0.12)',
-          },
-        },
-      },
-    },
-  });
-
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(GENRES_STORAGE_KEY, JSON.stringify(genres));
+    }
+  }, [genres, isInitialized]);
 
   const handleBookSubmit = (bookData) => {
     setBooks(prevBooks => {
@@ -159,34 +149,57 @@ const App = () => {
     );
   };
 
+  const handleAddGenre = (newGenre) => {
+    setGenres(prev => prev.includes(newGenre) ? prev : [...prev, newGenre]);
+  };
+
+  const handleDeleteGenre = (genreToRemove) => {
+    setGenres(prev => prev.filter(g => g !== genreToRemove));
+  };
+
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+      primary: blue,
+      secondary: deepOrange,
+      background: {
+        default: darkMode ? '#121212' : '#e5e5e5',
+        paper: darkMode ? '#1e1e1e' : '#ffffff',
+      },
+    }
+  });
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ 
+      <Box sx={{
         display: 'flex',
         minHeight: '100vh',
         backgroundColor: theme.palette.background.default
-      }}
-        translate="no"
-      >
-        <AppBar 
-          darkMode={darkMode} 
-          toggleDarkMode={toggleDarkMode} 
+      }} translate="no">
+        <AppBar
+          darkMode={darkMode}
+          toggleDarkMode={toggleDarkMode}
           activeView={activeView}
           setActiveView={setActiveView}
         />
         <Sidebar activeView={activeView} setActiveView={setActiveView} />
         {isInitialized && (
-          <Dashboard 
+          <Dashboard
             activeView={activeView}
             books={books}
             users={users}
+            genres={genres}
             onBookSubmit={handleBookSubmit}
             onDeleteBook={handleDeleteBook}
             onCheckoutBook={handleCheckout}
             onReturnBook={handleReturn}
             onUserSubmit={handleUserSubmit}
             onDeleteUser={handleDeleteUser}
+            onAddGenre={handleAddGenre}
+            onDeleteGenre={handleDeleteGenre}
           />
         )}
       </Box>

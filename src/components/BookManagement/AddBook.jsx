@@ -10,7 +10,7 @@ import {
   MenuItem
 } from '@mui/material';
 
-const AddBook = ({ open, onClose, onSubmit, initialData }) => {
+const AddBook = ({ open, onClose, onSubmit, initialData, genres = [], onAddGenre }) => {
   const [book, setBook] = useState({
     titulo: '',
     autor: '',
@@ -19,28 +19,8 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
     disponible: true
   });
 
-  const [generos, setGeneros] = useState([
-    'Ficción',
-    'No ficción',
-    'Ciencia ficción',
-    'Fantasía',
-    'Misterio',
-    'Romance',
-    'Terror',
-    'Biografía',
-    'Historia',
-    'Autoayuda'
-  ]);
-
   const [nuevoGenero, setNuevoGenero] = useState('');
-
-  const agregarGenero = () => {
-    const trimmed = nuevoGenero.trim();
-    if (trimmed && !generos.includes(trimmed)) {
-      setGeneros(prev => [...prev, trimmed]);
-      setNuevoGenero('');
-    }
-  };
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (open) {
@@ -51,18 +31,39 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
         genero: '',
         disponible: true
       });
+      setNuevoGenero('');
+      setError('');
     }
   }, [open, initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBook(prev => ({ ...prev, [name]: value }));
+    if (name === 'genero' && error) setError('');
   };
 
   const handleSubmit = () => {
-    if (!book.titulo || !book.autor || !book.año || !book.genero) return;
+    const nuevo = nuevoGenero.trim();
+    const seleccion = book.genero;
 
-    onSubmit(book);
+    // Validar conflicto: selección + texto nuevo
+    if (seleccion && nuevo) {
+      setError('Seleccionaste un género y también escribiste uno nuevo. Por favor, elegí solo uno.');
+      return;
+    }
+
+    let finalBook = { ...book };
+
+    if (nuevo) {
+      if (!genres.includes(nuevo)) {
+        onAddGenre(nuevo);
+      }
+      finalBook.genero = nuevo;
+    }
+
+    if (!finalBook.titulo || !finalBook.autor || !finalBook.año || !finalBook.genero) return;
+
+    onSubmit(finalBook);
 
     if (!initialData) {
       setBook({
@@ -74,6 +75,8 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
       });
     }
 
+    setNuevoGenero('');
+    setError('');
     onClose();
   };
 
@@ -121,16 +124,12 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
               name="genero"
               value={book.genero}
               onChange={handleChange}
-              variant="outlined"
-              sx={{ 
-                minWidth: '150px',
-                '& .MuiInputBase-root': {
-                  height: '56px'
-                }
-              }}
-              required
+              displayEmpty
             >
-              {generos.map((genero) => (
+              <MenuItem value="">
+                <em>Seleccioná un género</em>
+              </MenuItem>
+              {genres.map((genero) => (
                 <MenuItem key={genero} value={genero}>
                   {genero}
                 </MenuItem>
@@ -142,20 +141,29 @@ const AddBook = ({ open, onClose, onSubmit, initialData }) => {
               fullWidth
               label="Agregar nuevo género"
               value={nuevoGenero}
-              onChange={(e) => setNuevoGenero(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && agregarGenero()}
-              placeholder="Escribe un nuevo género y presiona Enter"
+              onChange={(e) => {
+                setNuevoGenero(e.target.value);
+                if (error) setError('');
+              }}
+              placeholder="Escribí un nuevo género si no encontrás uno"
+              error={Boolean(error)}
+              helperText={error}
             />
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button 
-          onClick={handleSubmit} 
-          color="primary" 
+        <Button
+          onClick={handleSubmit}
           variant="contained"
-          disabled={!book.titulo || !book.autor || !book.año || !book.genero}
+          color="primary"
+          disabled={
+            !book.titulo ||
+            !book.autor ||
+            !book.año ||
+            (!book.genero && !nuevoGenero.trim())
+          }
         >
           {initialData ? 'Guardar Cambios' : 'Agregar'}
         </Button>

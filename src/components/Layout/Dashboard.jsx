@@ -32,17 +32,21 @@ import BookStats from '../BookManagement/BookStats';
 import UserList from '../UserManagement/UserList';
 import AddUser from '../UserManagement/AddUser';
 import ReturnBook from '../LoanSystem/ReturnBook';
+import GenreManager from '../GenreManagement/GenreManager';
 
 const Dashboard = ({
   activeView,
   books,
   users,
+  genres,
   onBookSubmit,
   onUserSubmit,
   onDeleteBook,
   onCheckoutBook,
   onReturnBook,
-  onDeleteUser
+  onDeleteUser,
+  onAddGenre,
+  onDeleteGenre
 }) => {
   const [addBookOpen, setAddBookOpen] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
@@ -72,8 +76,9 @@ const Dashboard = ({
 
   const handleReturnSubmit = (bookId) => {
     const returnedBook = books.find(book => book.id === bookId);
-    const user = returnedBook?.prestadoA ?
-      users.find(u => u.id === returnedBook.prestadoA.id) : null;
+    const user = returnedBook?.prestadoA
+      ? users.find(u => u.id === returnedBook.prestadoA.id)
+      : null;
 
     onReturnBook(bookId);
     setSnackbarMessage(
@@ -89,58 +94,54 @@ const Dashboard = ({
     <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
       <Container maxWidth="xl">
         {activeView === 'dashboard' && (
-          <>
-            <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <LibraryBooksIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-                <Typography variant="h4" component="h1">
-                  Resumen de la Biblioteca
-                </Typography>
-              </Box>
-              <BookStats books={books} users={users} />
-            </Paper>
-          </>
+          <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <LibraryBooksIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
+              <Typography variant="h4" component="h1">
+                Resumen de la Biblioteca
+              </Typography>
+            </Box>
+            <BookStats books={books} users={users} />
+          </Paper>
         )}
 
         {activeView === 'books' && (
-          <>
-            <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 3
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <BookIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-                  <Typography variant="h4" component="h1">
-                    Gestión de Libros
-                  </Typography>
-                </Box>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => {
-                    setSelectedBook(null);
-                    setAddBookOpen(true);
-                  }}
-                  sx={{ height: 48 }}
-                >
-                  Agregar Libro
-                </Button>
+          <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 3
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <BookIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
+                <Typography variant="h4" component="h1">
+                  Gestión de Libros
+                </Typography>
               </Box>
-              <BookList
-                books={books}
-                users={users}
-                onEdit={(book) => {
-                  setSelectedBook(book);
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setSelectedBook(null);
                   setAddBookOpen(true);
                 }}
-                onDelete={onDeleteBook}
-                onCheckout={handleCheckoutSubmit}
-              />
-            </Paper>
-          </>
+                sx={{ height: 48 }}
+              >
+                Agregar Libro
+              </Button>
+            </Box>
+            <BookList
+              books={books}
+              users={users}
+              onEdit={(book) => {
+                setSelectedBook(book);
+                setAddBookOpen(true);
+              }}
+              onDelete={onDeleteBook}
+              onCheckout={handleCheckoutSubmit}
+            />
+          </Paper>
         )}
 
         {activeView === 'users' && (
@@ -216,7 +217,6 @@ const Dashboard = ({
                   borderColor: 'divider'
                 }}
               />
-
               <CardContent sx={{ p: 0 }}>
                 {books.filter(b => !b.disponible).length === 0 ? (
                   <Box sx={{
@@ -327,6 +327,16 @@ const Dashboard = ({
           </>
         )}
 
+        {activeView === 'genres' && (
+          <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+            <GenreManager
+              genres={genres}
+              onAddGenre={onAddGenre}
+              onDeleteGenre={onDeleteGenre}
+            />
+          </Paper>
+        )}
+
         <AddBook
           open={addBookOpen}
           onClose={() => setAddBookOpen(false)}
@@ -341,6 +351,8 @@ const Dashboard = ({
             setAddBookOpen(false);
           }}
           initialData={selectedBook}
+          genres={genres} 
+          onAddGenre={onAddGenre}
         />
 
         <AddUser
